@@ -9,7 +9,8 @@ RUN npm install
 COPY tsconfig.json tsconfig.json
 COPY src src
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
+
 RUN npm run build
 RUN npx prisma generate
 
@@ -17,7 +18,8 @@ RUN npx prisma generate
 FROM node:16 as production
 
 WORKDIR /app
-ENV NODE_ENV production
+ENV NODE_ENV=production
+
 
 COPY package.json package.json
 COPY prisma prisma

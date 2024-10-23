@@ -5,7 +5,7 @@ import {
   User,
 } from 'app/libs/gitlab/dtos/common';
 
-export interface MrOpenedWebhookPayload {
+export interface MrMergedWebhookPayload {
   object_kind: 'merge_request';
   event_type: 'merge_request';
   user: User;

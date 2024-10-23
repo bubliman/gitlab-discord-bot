@@ -8,6 +8,7 @@ import { MergeRequestClosedService } from 'app/modules/merge-request/services/me
 import { MergeRequestOpenedService } from 'app/modules/merge-request/services/merge-request-opened.service';
 import { MergeRequestUpdatedService } from 'app/modules/merge-request/services/merge-request-updated.service';
 import { MergeRequestValidationService } from 'app/modules/merge-request/services/merge-request-validation.service';
+import { MergeRequestMergedService } from './services/merge-request-merged.service ';
 
 @Module({
   imports: [DatabaseModule, DiscordModule, GitlabModule],
@@ -17,6 +18,7 @@ import { MergeRequestValidationService } from 'app/modules/merge-request/service
     MergeRequestUpdatedService,
     MergeRequestClosedService,
     MergeRequestApprovedService,
+    MergeRequestMergedService,
   ],
   controllers: [MergeRequestController],
 })

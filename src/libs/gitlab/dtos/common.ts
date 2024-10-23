@@ -5,7 +5,6 @@ export interface User {
   avatar_url: string;
   email: string;
 }
-
 export interface Project {
   id: number;
   name: string;

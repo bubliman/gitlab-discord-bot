@@ -1,6 +1,6 @@
 import { Controller, Post, Req } from '@nestjs/common';
 import { MrApprovedWebhookPayload } from 'app/libs/gitlab/dtos/mr-approved.interface';
-import { MrClosedWebhookPayload } from 'app/libs/gitlab/dtos/mr-closed.interface';
+import { MrMergedWebhookPayload } from 'app/libs/gitlab/dtos/mr-merged.interface';
 import { MrOpenedWebhookPayload } from 'app/libs/gitlab/dtos/mr-opened.interface';
 import { MrUpdateWebhookPayload } from 'app/libs/gitlab/dtos/mr-updated.interface';
 import { logger } from 'app/libs/logger';
@@ -9,6 +9,7 @@ import { MergeRequestClosedService } from 'app/modules/merge-request/services/me
 import { MergeRequestOpenedService } from 'app/modules/merge-request/services/merge-request-opened.service';
 import { MergeRequestUpdatedService } from 'app/modules/merge-request/services/merge-request-updated.service';
 import { MergeRequestValidationService } from 'app/modules/merge-request/services/merge-request-validation.service';
+import { MergeRequestMergedService } from './services/merge-request-merged.service ';
 
 type WebhookRequest = Express.Request & { body: any };
 
@@ -20,6 +21,7 @@ export class MergeRequestController {
     private readonly mergeRequestUpdatedService: MergeRequestUpdatedService,
     private readonly mergeRequestClosedService: MergeRequestClosedService,
     private readonly mergeRequestApprovedService: MergeRequestApprovedService,
+    private readonly mergeRequestMergedService: MergeRequestMergedService,
   ) {}
 
   @Post()
@@ -42,14 +44,19 @@ export class MergeRequestController {
         await this.mergeRequestUpdatedService.handleMrUpdatedWebhook(body);
       }
 
-      if (action === 'close') {
-        const body = req.body as MrClosedWebhookPayload;
-        await this.mergeRequestClosedService.handleMergeRequestClosed(body);
-      }
+      // if (action === 'close') {
+      //   const body = req.body as MrClosedWebhookPayload;
+      //   await this.mergeRequestClosedService.handleMergeRequestClosed(body);
+      // }
 
       if (action === 'approved') {
         const body = req.body as MrApprovedWebhookPayload;
         await this.mergeRequestApprovedService.handleMergeRequestApproved(body);
+      }
+
+      if (action === 'merged') {
+        const body = req.body as MrMergedWebhookPayload;
+        await this.mergeRequestMergedService.handleMrMergedWebhook(body);
       }
     }
   }

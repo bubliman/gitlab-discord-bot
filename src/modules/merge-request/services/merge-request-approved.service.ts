@@ -5,8 +5,6 @@ import { MrApprovedWebhookPayload } from 'app/libs/gitlab/dtos/mr-approved.inter
 import { logger } from 'app/libs/logger';
 import { DatabaseClient } from 'app/modules/database/database.service';
 import { DiscordService } from 'app/modules/discord/discord.service';
-import { MessageEmbed } from 'discord.js';
-
 @Injectable()
 export class MergeRequestApprovedService {
   constructor(
@@ -16,12 +14,14 @@ export class MergeRequestApprovedService {
   ) {}
 
   async notifyAssigneesForApproval(
-    gitlabUsernames: string[],
     author: Omit<UserSchema, 'created_at'>,
     projectName: string,
     mrTitle: string,
     mrUrl: string,
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const channel = this.discord.mrChannel!;
+    const gitlabUsernames = [author.username] as string[];
     for (const gitlabUsername of gitlabUsernames) {
       logger.log(
         `Notifying assignee ${gitlabUsername} for '${projectName}/${mrTitle}' approval`,
@@ -35,35 +35,55 @@ export class MergeRequestApprovedService {
       });
 
       const idsToNotify = trackers
-        .filter(
-          (tracker) =>
-            !(
-              tracker.gitlabUsername === author.username &&
-              tracker.user.gitlabUsername === author.username
-            ),
-        )
+        // .filter(
+        //   (tracker) =>
+        //     !(
+        //       tracker.gitlabUsername === author.username &&
+        //       tracker.user.gitlabUsername === author.username
+        //     ),
+        // )
         .map((tracker) => tracker.user.discordId);
+      // Create a string with pings for each reviewer
 
+      const emoji = ':white_check_mark: ';
+      const messageText = ` I've been approved, you can merge me! ${emoji} MR: **[${mrTitle} - ${mrUrl
+        .split('')
+        .slice(mrUrl.length - 2, mrUrl.length)
+        .join('')}](${mrUrl})** by ${author.name}`;
+      channel.send({
+        content: `${
+          idsToNotify.length
+            ? idsToNotify.map((id) => `<@${id}>`)
+            : gitlabUsername
+        } ${messageText}`,
+      });
       for (const id of idsToNotify) {
+        const pingMessage = id ? `<@${id}>` : gitlabUsername;
+
         logger.log(`Notifying ${id}`);
         const user = this.discord.users.cache.get(id);
+
         if (user) {
           logger.log(`Notifying user ${id} for mr ${mrTitle}`);
+
           user.send({
-            embeds: [
-              new MessageEmbed()
-                .setTitle(
-                  `Merge request ${mrTitle} approved by ${author.username}`,
-                )
-                .setColor('#409bd7')
-                .setDescription(
-                  `A merge request your are assigned on **${projectName}** has been approved.\n\n**[${mrTitle}](${mrUrl})**`,
-                )
-                .setThumbnail(
-                  'https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png',
-                )
-                .setTimestamp(),
-            ],
+            content: pingMessage + messageText,
+            // embeds: [
+            //   new MessageEmbed()
+            //     .setTitle(
+            //       `Merge request ${mrTitle} approved by ${author.username}`,
+            //     )
+            //     .setColor('#409bd7')
+            //     .setDescription(
+            //       `A merge request your are assigned on **${projectName}** has been approved.\n\n**[${mrTitle} - ${mrUrl
+            // .split('')
+            // .slice(mrUrl.length - 2, mrUrl.length).join('')}](${mrUrl})**`,
+            //     )
+            //     .setThumbnail(
+            //       'https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png',
+            //     )
+            //     .setTimestamp(),
+            // ],
           });
         } else {
           logger.warn(`User ${id} not in cache`);
@@ -73,17 +93,15 @@ export class MergeRequestApprovedService {
   }
 
   async handleMergeRequestApproved(payload: MrApprovedWebhookPayload) {
-    const { assignees, object_attributes, project } = payload;
+    const { object_attributes, project } = payload;
 
     const author = await this.gitlab.Users.show(object_attributes.author_id);
-    if (assignees) {
-      this.notifyAssigneesForApproval(
-        assignees.map((a) => a.username),
-        author,
-        project.name,
-        object_attributes.title,
-        object_attributes.url,
-      );
-    }
+
+    this.notifyAssigneesForApproval(
+      author,
+      project.name,
+      object_attributes.title,
+      object_attributes.url,
+    );
   }
 }

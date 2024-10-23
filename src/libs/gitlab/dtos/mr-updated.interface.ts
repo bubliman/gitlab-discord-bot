@@ -1,5 +1,9 @@
-import { MergeRequest, Project, Repository } from 'app/libs/gitlab/dtos/common';
-import { User } from 'discord.js';
+import {
+  MergeRequest,
+  Project,
+  Repository,
+  User,
+} from 'app/libs/gitlab/dtos/common';
 
 export interface MrUpdateWebhookPayload {
   object_kind: 'merge_request';
@@ -10,6 +14,7 @@ export interface MrUpdateWebhookPayload {
   labels: any[];
   changes: {
     assignees?: { previous: User[]; current: User[] };
+    reviewers?: { previous: User[]; current: User[] };
     title?: {
       previous: string;
       current: string;
@@ -17,4 +22,5 @@ export interface MrUpdateWebhookPayload {
   };
   repository: Repository;
   assignees?: User[];
+  reviewers?: User[];
 }

@@ -30,7 +30,10 @@ export class MergeRequestClosedService {
           .setTitle(`Merge request closed by ${author.username}`)
           .setColor(0xff0000)
           .setDescription(
-            `A merge request has been closed on repository **${projectName}**.\n\n**[${mrTitle}](${mrUrl})**`,
+            `A merge request has been closed on repository **${projectName}**.\n\n**[${mrTitle} - ${mrUrl
+              .split('')
+              .slice(mrUrl.length - 2, mrUrl.length)
+              .join('')}](${mrUrl})**`,
           )
           .setThumbnail(
             'https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png',
@@ -81,7 +84,10 @@ export class MergeRequestClosedService {
                 .setTitle(`Merge request closed by ${author.username}`)
                 .setColor(0xff0000)
                 .setDescription(
-                  `A merge request on which you were assigned has been closed on repository **${projectName}**.\n\n**[${mrTitle}](${mrUrl})**`,
+                  `A merge request on which you were assigned has been closed on repository **${projectName}**.\n\n**[${mrTitle} - ${mrUrl
+                    .split('')
+                    .slice(mrUrl.length - 2, mrUrl.length)
+                    .join('')}](${mrUrl})**`,
                 )
                 .setThumbnail(
                   'https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png',
